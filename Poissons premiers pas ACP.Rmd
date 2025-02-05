@@ -1,0 +1,284 @@
+---
+title: "Premiers pas avec l'ACP"
+author: "Mary Valentin"
+date: "05/02/2025"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library("markdown")
+library("knitr")
+library("rmarkdown")
+```
+
+## Importation des données
+
+Importation du jeu de données puis création d'une matrice R contenant 44 observations (poissons) et 8 variables quantitatives
+
+```{r message=FALSE, warning=FALSE}
+
+d<-read.csv2("poissons.csv",header=TRUE,row.names="NUM", dec=".") #lecture d'un fichier csv
+
+z<-d[,3:10]
+dim(d)
+n<-dim(z)[1]
+p<-dim(z)[2]
+```
+
+## Descritpion bivariée, covariances et corrélations
+
+**Croisement des variables quantitatives deux à deux**
+
+```{r message=FALSE, warning=FALSE}
+#Utiliser la fonction pairs ou ggpairs (librairie GGally)
+cross<-pairs(z)
+```
+
+**Matrice des variances-covariances entre les variables quantitatives**
+
+```{r message=FALSE, warning=FALSE}
+#Utiliser la fonction cov
+matrixCov<-cov(z)
+```
+
+**Matrice des corrélations entre les variables quantitatives**
+
+```{r message=FALSE, warning=FALSE}
+#Utiliser la fonction cor
+matrixCor<-cor(z)
+```
+
+## Standardisation des variables quantitatives
+
+**Moyenne et écart-type de chaque variable quantitative**
+
+```{r message=FALSE, warning=FALSE}
+#Utiliser la fonction apply avec la fonction mean puis avec la fonction sd
+meanvar<-apply(z, 2, mean, na.rm=TRUE)
+sdvar<-apply(z, 2, sd, na.rm=TRUE)
+
+#Afficher les moyennes et écart-types
+print(meanvar)
+print(sdvar)
+```
+
+**Création d'une matrice Y avec les variables centrées**
+
+```{r message=FALSE, warning=FALSE}
+#Utiliser la fonction sweep
+y<-sweep(z, 2, colMeans(z), FUN = "-")
+```
+
+Vérifier que toutes les variables sont maintenant de moyenne nulle mais que les écart-types n'ont pas changé
+
+```{r message=FALSE, warning=FALSE}
+meanY<-apply(y, 2, mean, na.rm=TRUE)
+sdY<-apply(y, 2, sd, na.rm=TRUE)
+
+print((sdY == sdvar))
+```
+
+**Création d'une matrice X avec les variables centrées et réduites**
+
+```{r message=FALSE, warning=FALSE}
+#Utiliser la fonction sweep
+x<-sweep(y, 2, apply(y, 2, sd), FUN = "/")
+```
+
+Vérifier que toutes les variables sont maintenant de moyenne nulle et d'écart-type égal à un
+
+```{r message=FALSE, warning=FALSE}
+sdX<-apply(x, 2, sd)
+meanX<-apply(x, 2, mean)
+meanX
+sdX
+```
+
+## Matrice des variances-covariances et des corrélations
+
+**Matrice des variances-covariances 1/nY'Y (avec Y la matrice des variables centrées)**
+
+```{r message=FALSE, warning=FALSE}
+#Calcul manuel de la matrice des variances-covariances puis vérification avec la fonction cov
+Cor_man=t(as.matrix(x))%*%as.matrix(x)/n
+
+#Comparer les deux calculs
+all.equal(matrixCor, Cor_man)
+```
+
+Le calcul avec *(t(as.matrix(Y))%*%as.matrix(Y))/n\* .....
+
+```{r message=FALSE, warning=FALSE}
+#Calcul manuel de la matrice des variances-covariances puis vérification avec la fonction cov
+Cov_man=t(as.matrix(x))%*%as.matrix(x)/n
+
+#Comparer les deux calculs
+all.equal(matrixCov, Cov_man)
+```
+
+**Matrice des corrélations 1/nX'X (avec X matrice des variables centrées réduites)**
+
+```{r message=FALSE, warning=FALSE}
+#Calcul manuel de X'X puis vérification avec la fonction cor
+
+
+#Comparer les deux calculs
+
+```
+
+Le calcul avec *(t(as.matrix(X))%*%as.matrix(X)/n) .....
+
+**Standardization des variables avec l'écart-type non corrigé (dénominateur n)**
+
+```{r message=FALSE, warning=FALSE}
+#Standarisation "manuelle"
+et_nocorrige <- apply(z, 2, sd)*sqrt((n-1)/n)
+print(et_nocorrige)
+X <- sweep(y,2,et_nocorrige, "/")
+#Comparer les deux calculs
+
+```
+
+```{r message=FALSE, warning=FALSE}
+#Transtypage de la variable X pour avoir une matrice et non pas un data frame
+#remarque : transtypage pas fait avant afin de pouvoir utiliser certaines fonctions spécifiques aux datagrames
+X=as.matrix(X)
+X
+```
+
+## ACP normée sur la matrice des variables centrées-réduites
+
+### Valeurs propres
+
+Calcul et ébouli des valeurs propres
+
+```{r message=FALSE, warning=FALSE}
+#Diagonaliser la matrice des corrélations avec la fonction eigen
+
+vp<-eigen(t(X)%*%X/n)
+names(vp)
+vp$values
+barplot(vp$values, main = "Valeur propres", ylim = c(0,5))
+```
+
+### Inertie
+
+```{r message=FALSE, warning=FALSE}
+#Cacluler l'inertie du nuage avec la fonction sum
+
+```
+
+Sans surprise, ....
+
+### Nuage des individus
+
+Supposons que seulement les 2 premiers axes soient retenus, calcul des coordonnées des individus sur les 2 premiers axes (composantes principales F1 et F2 dans la matrice F)
+
+```{r message=FALSE, warning=FALSE}
+q<-2
+U<-vp$vectors[,1:q]
+F<-X%*%U
+head(F)
+```
+
+**Représentation graphique des individus sur le 1er plan factoriel**
+
+```{r message=FALSE, warning=FALSE}
+plot(F, main = "Individus sur le premier plan factoriel", xlab = '1er axe factoriel', ylab = "2e axe factoriel")
+```
+
+### Nuage des variables
+
+Supposons que seulement les 2 premiers axes soient retenus, calcul des coordonnées des variables sur les 2 premiers axes (composantes principales G1 et G2 dans la matrice G)
+
+```{r message=FALSE, warning=FALSE}
+
+```
+
+Vérifions que les vecteurs propres V sont bien orthogonaux :
+
+```{r message=FALSE, warning=FALSE}
+
+```
+
+Calculons les coordonnées des variables sur les 2 axes factoriels :
+
+```{r message=FALSE, warning=FALSE}
+
+```
+
+On peut retrouver les coordonnées des variables sans les vecteurs V (ans faire la 2e diagonalisation) mais en utilisant les formules de transition :
+
+```{r message=FALSE, warning=FALSE}
+
+```
+
+Représentation graphique des variables sur le 1er plan factoriel :
+
+```{r message=FALSE, warning=FALSE}
+
+```
+
+## Vérication en réalisant une ACP normée avec le package Factominer
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+**Comparaison des deux ACP (la "manuelle" et celle avec FactoMiner** Les valeurs propres :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+Les coordonnées des individus sur les axes factoriels :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+**Que constatez-vous ?**
+
+Les coordonnées des variables sur les axes factoriels :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+## Décomposition en valeurs singulières (une autre forme de décomposition d'une matrice que celle avec les valeurs propres)
+
+Décomposons en valeurs singulières la matrice X/sqrt(n) avec X la matrice des variables centrées-réduites :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+Les valeurs singulières et les valeurs propres : les valeurs singulières sont les racines carrées des valeurs propres de 1/n(X'X)
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+Les vecteurs singuliers à gauche et à droite :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+Calcul des coordonnées des individus sur les axes de l'ACP grâce à la SVD :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
+
+Calcul des coordonnées des observations sur les axes de l'ACP grâce à la SVD :
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+```
