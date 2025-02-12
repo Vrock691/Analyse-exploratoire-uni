@@ -235,18 +235,21 @@ plot(G, main="Variables sur le 1er plan factoriel", xlab="1er axe factorial", yl
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 library("FactoMineR")
 library("factoextra")
+res.pca<-PCA(Z, scale.unit=TRUE, ncp=2, graph=FALSE)
 ```
 
 **Comparaison des deux ACP (la "manuelle" et celle avec FactoMiner** Les valeurs propres :
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+res.pca$eig
+vp$values
 ```
 
 Les coordonnées des individus sur les axes factoriels :
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+head(res.pca$ind$coord)
+head(F)
 ```
 
 **Que constatez-vous ?**
@@ -262,29 +265,35 @@ Les coordonnées des variables sur les axes factoriels :
 Décomposons en valeurs singulières la matrice X/sqrt(n) avec X la matrice des variables centrées-réduites :
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+res.SVD<-svd(X/sqrt(n))
+names(res.SVD)
 ```
 
 Les valeurs singulières et les valeurs propres : les valeurs singulières sont les racines carrées des valeurs propres de 1/n(X'X)
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+res.SVD$d[1:q]
+(res.SVD$d^2)[1:q]
+res.pca$eig[1:q]
 ```
 
 Les vecteurs singuliers à gauche et à droite :
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+R <- res.SVD$v[,1:q]
+L <- res.SVD$u[,1:q]
 ```
 
 Calcul des coordonnées des individus sur les axes de l'ACP grâce à la SVD :
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+Fbis <- X%*%R
+head(res.pca$ind$coord)
+head(Fbis)
 ```
 
 Calcul des coordonnées des observations sur les axes de l'ACP grâce à la SVD :
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+Gbis <- (t(X)/sqrt(n))%*%L
 ```
