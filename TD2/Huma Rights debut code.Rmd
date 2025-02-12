@@ -1,0 +1,65 @@
+---
+title: "Human Rights"
+author: "Sabine Loudcher"
+date: "09/02/2023"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE,warning=FALSE}
+library("FactoMineR")
+library("factoextra")
+library("missMDA")
+```
+
+## Importation des données
+
+```{r message=FALSE,warning=FALSE}
+#setwd("à compléter avec votre chemin") 
+d<-read.csv2("Human Rights.csv",header=TRUE,row.names="Country",dec=",") 
+names(d)
+```
+
+##Etude des pays selon leur niveau de développement
+
+```{r message=FALSE}
+d.analyse<-d[, colnames(d) %in% c("Health.Expenditure", "Under.five.mortality.rate","Life.expectancy.at.birth","Expected.Years.of.Schooling","GDP.per.capita","Income.index","Female.male.ratio.with.at.least.secondary.education","Adolescent.fertility.rate","Gender.Inequality.Index","female.male.ratio.in.parliament","Maternal.mortality.ratio","HDI")]
+
+
+res.pca <- PCA(d.analyse, scale.unit=TRUE, quanti.sup = 12, ncp=5,graph=FALSE) #la variable 12 l'HDI est utilisée comme variable quanti supp
+
+```
+
+à compléter
+
+```{r message=FALSE}
+nb <- estim_ncpPCA(d.analyse, ncp.max = 5)
+nb$ncp
+d.analyse.complete<-imputePCA(d.analyse, ncp = nb$ncp)
+res.pca <- PCA(d.analyse.complete$completeObs, scale.unit = TRUE, quanti.sup = 12, ncp = 5, graph = FALSE)
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0,70))
+```
+
+## Etude des pays selon leur respect des droits de l’Homme
+
+```{r message=FALSE,warning=FALSE}
+d.analyse<-d[, colnames(d) %in% c("POLPRIS","TORT","DOMMOV","SPEECH","NEW_RELFRE","WORKER","WECON","HDI")]
+#ou
+d.analyse<-d[,24:31]
+
+```
+
+```{r message=FALSE,warning=FALSE}
+res.mca <- MCA (d.analyse, quanti.sup = 8, graph = FALSE)  #calcul de l'ACM 
+print(res.mca)
+```
+
+à compléter
