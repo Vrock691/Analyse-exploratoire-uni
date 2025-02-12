@@ -198,37 +198,43 @@ plot(F, main = "Individus sur le premier plan factoriel", xlab = '1er axe factor
 Supposons que seulement les 2 premiers axes soient retenus, calcul des coordonnées des variables sur les 2 premiers axes (composantes principales G1 et G2 dans la matrice G)
 
 ```{r message=FALSE, warning=FALSE}
-
+vp2<-eigen((X%*%t(X)/n))
+q<-2
+vp2$values[1:q]
+V<-vp2$vectors[,1:q]
 ```
 
 Vérifions que les vecteurs propres V sont bien orthogonaux :
 
 ```{r message=FALSE, warning=FALSE}
-
+round(t(V)%*%V)
 ```
 
 Calculons les coordonnées des variables sur les 2 axes factoriels :
 
 ```{r message=FALSE, warning=FALSE}
-
+G <- t(X)%*%V/sqrt(n)
+head(G)
 ```
 
 On peut retrouver les coordonnées des variables sans les vecteurs V (ans faire la 2e diagonalisation) mais en utilisant les formules de transition :
 
 ```{r message=FALSE, warning=FALSE}
-
+Gbis<-sqrt(vp2$values[1:q])*U
+head(Gbis)
 ```
 
 Représentation graphique des variables sur le 1er plan factoriel :
 
 ```{r message=FALSE, warning=FALSE}
-
+plot(G, main="Variables sur le 1er plan factoriel", xlab="1er axe factorial", ylab="")
 ```
 
 ## Vérication en réalisant une ACP normée avec le package Factominer
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-
+library("FactoMineR")
+library("factoextra")
 ```
 
 **Comparaison des deux ACP (la "manuelle" et celle avec FactoMiner** Les valeurs propres :
