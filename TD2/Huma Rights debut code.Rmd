@@ -25,7 +25,7 @@ d<-read.csv2("Human Rights.csv",header=TRUE,row.names="Country",dec=",")
 names(d)
 ```
 
-##Etude des pays selon leur niveau de développement
+## Etude des pays selon leur niveau de développement
 
 ```{r message=FALSE}
 d.analyse<-d[, colnames(d) %in% c("Health.Expenditure", "Under.five.mortality.rate","Life.expectancy.at.birth","Expected.Years.of.Schooling","GDP.per.capita","Income.index","Female.male.ratio.with.at.least.secondary.education","Adolescent.fertility.rate","Gender.Inequality.Index","female.male.ratio.in.parliament","Maternal.mortality.ratio","HDI")]
