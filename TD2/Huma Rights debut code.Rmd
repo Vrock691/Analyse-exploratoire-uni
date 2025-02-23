@@ -21,7 +21,7 @@ library("missMDA")
 
 ```{r message=FALSE,warning=FALSE}
 #setwd("à compléter avec votre chemin") 
-d<-read.csv2("Human Rights.csv",header=TRUE,row.names="Country",dec=",") 
+d<-read.csv2("TD/Human Rights.csv",header=TRUE,row.names="Country",dec=",") 
 names(d)
 ```
 
@@ -35,18 +35,37 @@ res.pca <- PCA(d.analyse, scale.unit=TRUE, quanti.sup = 12, ncp=5,graph=FALSE) #
 
 ```
 
-à compléter
+Dans cette APC, on constate que des valeurs sont manquantes, nous allons utiliser missMDA pour compléter ces valeurs manquantes et refaire l'ACP
 
 ```{r message=FALSE}
+
+# Estimation du nombre de dimensions nécéssaires pour l'imputation de données
 nb <- estim_ncpPCA(d.analyse, ncp.max = 5)
 nb$ncp
+
+# Imputation des données
 d.analyse.complete<-imputePCA(d.analyse, ncp = nb$ncp)
+
+# Execution de l'ACP
 res.pca <- PCA(d.analyse.complete$completeObs, scale.unit = TRUE, quanti.sup = 12, ncp = 5, graph = FALSE)
 
+# Graphique pour les valeurs propres
 eig.val <- get_eigenvalue(res.pca)
-eig.val
 fviz_eig(res.pca, addlabels = TRUE, ylim = c(0,70))
+
+# Graphique pour les variables
+var <- get_pca_var(res.pca)
+fviz_cos2(res.pca, choice = "var")
+
+# Graphique pour les individus
+ind <- get_pca_ind(res.pca)
+fviz_pca_ind(res.pca, col.ind = "red")
+
 ```
+
+### ANALYSE
+
+On constate sur le premier graphique sur les valeurs propre que la première dimension est celle dont la variance est la mieux expliquée par la PCA.
 
 ## Etude des pays selon leur respect des droits de l’Homme
 
